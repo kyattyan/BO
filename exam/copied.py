@@ -21,12 +21,12 @@ warnings.simplefilter("ignore", ConvergenceWarning)
 #どの関数がトリガーになっているかよくわからないが、警告で言及される置換先関数が見つからないので無視
 warnings.simplefilter("ignore", FutureWarning)
 
-regression_method = "gpr_one_kernel"  # gpr_one_kernel', 'gpr_kernels'
+regression_method = "gpr_kernels"  # gpr_one_kernel', 'gpr_kernels'
 acquisition_function = 'PTR'  # 'PTR', 'PI', 'EI', 'MI'
 
 fold_number = 5  # クロスバリデーションの fold 数
-kernel_number = 4  # 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
-target_range = [-40, -130]  # PTR
+kernel_number = 6  # 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+target_range = [0, -100]  # PTR
 relaxation = 0.01  # EI, PI
 delta = 10 ** -6  # MI
 
@@ -37,13 +37,32 @@ x_prediction = pd.read_csv('generated_wine_candidates.csv', index_col=0, header=
 
 
 # データ分割
-y = dataset.iloc[:, 14]  # 目的変数
-x = dataset.iloc[:, 0:13]  # 説明変数
+#y = dataset.iloc[:, 14]  # 目的変数
+#x = dataset.iloc[:, 0:13]  # 説明変数
+
+# ミニ版
+dimension = 6
+x = dataset.iloc[:, 0:dimension]
+x_prediction = x_prediction.iloc[:, 0:dimension]
+wine_data = pd.read_csv("wine_with_evaluation.csv", index_col=0, header=0).iloc[:, 0:dimension]
+def wine_evaluatiuon_Y2(
+	wine_property: pd.DataFrame
+)->np.ndarray:
+
+	#wine_data = pd.read_csv("wine_with_evaluation.csv", index_col=0, header=0).iloc[:, 0:13]
+
+	scaled_property = (wine_property - wine_data.mean())/wine_data.std()
+	n = wine_data.shape[1]
+
+	score = -10*n - (scaled_property.values**2 - 10*np.cos(2*np.pi*scaled_property.values)).sum(axis=1)
+
+	return score
+y = pd.Series(wine_evaluatiuon_Y2(x))
 
 # 標準偏差が 0 の特徴量の削除
-deleting_variables = x.columns[x.std() == 0]
-x = x.drop(deleting_variables, axis=1)
-x_prediction = x_prediction.drop(deleting_variables, axis=1)
+#deleting_variables = x.columns[x.std() == 0]
+#x = x.drop(deleting_variables, axis=1)
+#x_prediction = x_prediction.drop(deleting_variables, axis=1)
 
 """kernels = [ConstantKernel() * DotProduct() + WhiteKernel(),
 			ConstantKernel() * RBF() + WhiteKernel(),
@@ -59,7 +78,7 @@ x_prediction = x_prediction.drop(deleting_variables, axis=1)
 
 scores = []
 rsq = []
-#y_higher = y[y>y.mean()]
+#y_higher = y[y>(y.mean())]
 #x_higher = x.iloc[y_higher.index]
 
 #x_original = deepcopy(x)
@@ -68,15 +87,15 @@ rsq = []
 #x = x_higher
 #y = y_higher
 
-for i in range (0, 200):
+for i in range (0, 20):
     print(f"loop {i}")
     # オートスケーリング
     # 2回目以降のループではx, yが更新されている
     autoscaled_y = (y - y.mean()) / y.std()
     autoscaled_x = (x - x.mean()) / x.std()
     autoscaled_x_prediction = (x_prediction - x.mean()) / x.std()
-    print(x)
-    print(y)
+    #print(x)
+    #print(y)
     model = model_generator.generate_gaussian_process_regressor(
         x, y, 
         regression_method, 
@@ -195,23 +214,25 @@ for i in range (0, 200):
     next_sample = x_prediction.loc[acquisition_function_prediction.idxmax()]  # 次のサンプル
     #next_sample.to_csv('next_sample_bo_{0}_{1}.csv'.format(regression_method, acquisition_function)) # csv ファイルに保存。同じ名前のファイルがあるときは上書きされますので注意してください
 
-    score_of_next_sample = wine_actual_evaluation.wine_evaluatiuon_Y2(next_sample)
+    score_of_next_sample = wine_evaluatiuon_Y2(next_sample)
     print(f"the score of the next sample: {score_of_next_sample}")
     x = pd.concat([x, next_sample])
     y = pd.concat([y, pd.Series(score_of_next_sample, index=next_sample.index)])
     x_prediction = x_prediction.drop(index=next_sample.index)
     rsq.append(r2_score)
     scores.append(score_of_next_sample)
-    print(f"y mean = {y.mean()}")
-    #target_range = [0, y.mean()]
-    y_higher = y[y>y.mean()]
+    
+    
+    #y_higher = y[y>y.mean()]
     
     #y = y[y!=y.min()]
     #x = x.loc[y.index]
+    print(f"y mean = {y.mean()}")
+    target_range = [0, y.mean()]
 
-    if score_of_next_sample[0] > -50:
+    """if score_of_next_sample[0] > -5:
         break
-
+"""
 # クロスバリデーションによる y の値の推定
 cross_validation = KFold(n_splits=fold_number, random_state=9, shuffle=True) # クロスバリデーションの分割の設定
 autoscaled_estimated_y_in_cv = cross_val_predict(model, autoscaled_x, autoscaled_y, cv=cross_validation)  # y の推定

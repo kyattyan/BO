@@ -39,15 +39,17 @@ def generate_gaussian_process_regressor(
 			ConstantKernel() * Matern(nu=0.5) + WhiteKernel() + ConstantKernel() * DotProduct(),
 			ConstantKernel() * Matern(nu=2.5) + WhiteKernel(),
 			ConstantKernel() * Matern(nu=2.5) + WhiteKernel() + ConstantKernel() * DotProduct(), #10
-			ConstantKernel() * Matern(nu=1.5) * ExpSineSquared() + WhiteKernel(),
-			ConstantKernel() * Matern(nu=1.5) * ExpSineSquared(periodicity=10) + WhiteKernel(),
-			ConstantKernel() * Matern(nu=1.5) * ExpSineSquared(periodicity=100) + WhiteKernel(),
-			ConstantKernel() * Matern(nu=1.5) * ExpSineSquared(periodicity=0.1) + WhiteKernel(), #14
-			ConstantKernel() * Matern(nu=1.5) * ExpSineSquared(length_scale=5) + WhiteKernel(), #15
+			#ConstantKernel() * Matern(nu=1.5) * ExpSineSquared() + WhiteKernel(),
+			#ConstantKernel() * Matern(nu=1.5) * ExpSineSquared(periodicity=10) + WhiteKernel(),
+			#ConstantKernel() * Matern(nu=1.5) * ExpSineSquared(periodicity=100) + WhiteKernel(),
+			#ConstantKernel() * Matern(nu=1.5) * ExpSineSquared(length_scale=0.1, periodicity=0.1) + WhiteKernel(), #14
+			#ConstantKernel() * Matern(nu=1.5) * ExpSineSquared(length_scale=5) + WhiteKernel(), #15
 			ConstantKernel() * Matern(nu=2.5) + ConstantKernel() * RBF(np.ones(x_data.shape[1])) + WhiteKernel(),
 			ConstantKernel() * Matern(nu=2.5) + ConstantKernel() * RBF(np.ones(x_data.shape[1])) + WhiteKernel() + ConstantKernel() * DotProduct(),
 			ConstantKernel() * Matern(nu=3.5) + WhiteKernel(), 
-			ConstantKernel() * Matern(nu=3.5) + WhiteKernel() + ConstantKernel() * DotProduct(),]
+			ConstantKernel() * Matern(nu=3.5) + WhiteKernel() + ConstantKernel() * DotProduct(),
+			ConstantKernel() * Matern(nu=3.5) + ConstantKernel() * RBF(np.ones(x_data.shape[1])) + WhiteKernel(), 
+			ConstantKernel() * Matern(nu=3.5) + ConstantKernel() * RBF(np.ones(x_data.shape[1])) + WhiteKernel() + ConstantKernel() * DotProduct(),]
 	
 		# モデル構築
 	if regression_method == 'gpr_one_kernel':

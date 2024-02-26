@@ -34,3 +34,12 @@ def wine_evaluatiuon_Y2(
 	score = -10*n - (scaled_property.values**2 - 10*np.cos(2*np.pi*scaled_property.values)).sum(axis=1)
 
 	return score
+
+def wine_evaluatuon_Y3(
+		wine_property: pd.DataFrame
+)->np.ndarray:
+	scaled_property = (wine_property - wine_data.mean())/wine_data.std()
+
+	score = -10 * np.cos(2 * np.pi * scaled_property.values)/scaled_property.values.sum(axis=1)
+
+	return score
