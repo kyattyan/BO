@@ -43,7 +43,8 @@ import numpy as np
 
 def probability_in_target_range(
         estimated_y_prediction, 
-        estimated_y_prediction_std
+        estimated_y_prediction_std,
+        target_range: list[int]
         )->pd.DataFrame:
     acquisition_function_prediction = norm.cdf(target_range[1],
                                                 loc=estimated_y_prediction,
@@ -53,4 +54,4 @@ def probability_in_target_range(
                                                                 scale=estimated_y_prediction_std)
     acquisition_function_prediction[estimated_y_prediction_std <= 0] = 0
     
-    return 
+    return acquisition_function_prediction

@@ -14,6 +14,7 @@ from copy import deepcopy
 
 import model_generator
 import wine_actual_evaluation
+import validation
 
 #収束しないという警告が山ほどでるので無視
 warnings.simplefilter("ignore", ConvergenceWarning)
@@ -145,7 +146,7 @@ for i in range (0, 20):
     """
     
     
-    # クロスバリデーションによる y の値の推定
+    """# クロスバリデーションによる y の値の推定
     cross_validation = KFold(n_splits=fold_number, random_state=9, shuffle=True) # クロスバリデーションの分割の設定
     autoscaled_estimated_y_in_cv = cross_val_predict(model, autoscaled_x, autoscaled_y, cv=cross_validation)  # y の推定
     estimated_y_in_cv = autoscaled_estimated_y_in_cv * y.std() + y.mean()  # スケールをもとに戻す
@@ -167,7 +168,8 @@ for i in range (0, 20):
     plt.xlabel('actual y')  # x 軸の名前
     plt.ylabel('estimated y')  # y 軸の名前
     plt.gca().set_aspect('equal', adjustable='box')  # 図の形を正方形に
-    plt.show()  # 以上の設定で描画
+    plt.show()  # 以上の設定で描画"""
+    validation.cross_validation(x, y, model, fold_number=fold_number, graph_plot=True)
 
 
     # 予測
